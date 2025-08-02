@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.p~ 
+*.swp
+*.log
+
+# Virtual environment
+venv/
+.env
+.env.*
+
+# Django
+*.sqlite3
+*.db
+db.sqlite3
+/media
+/staticfiles
+/static_root
+/media_root
+
+# VSCode
+.vscode/
+
+# Pytest
+.cache/
+.pytest_cache/
+
+# Celery
+celerybeat-schedule
+*.pid
+
+# Redis
+dump.rdb
+
+# Migrations
+**/migrations/
+!**/migrations/__init__.py
+
+# Docker
+*.tar
+*.bak
+*.tmp
+docker-compose.override.yml
+
+# Logs
+logs/
+*.log
+
+# Coverage
+htmlcov/
+.coverage
+coverage.xml
+nosetests.xml
+
+# Swagger
+*.json
+*.yaml
