@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.cache import cache
 from decouple import config
+import requests
+import unicodedata
 from .utils import fetch_weather
 from .tasks import save_weather_history
 from .serialiazers import WeatherHistorySerializer
@@ -18,6 +20,10 @@ def get_client_ip(request):
                 ip = request.META.get("REMOTE_ADDR")
             return ip
 
+def slugify_key(text):
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    return text.lower().replace(" ", "_")
+
 class WeatherView(APIView):
 
     def get(self, request):
@@ -25,13 +31,14 @@ class WeatherView(APIView):
         if not city: 
             return Response({"error": "Parâmetro cidade é obrigatório!"}, status = status.HTTP_400_BAD_REQUEST)
         
-        key = f"weather:{city.lower()}"
+        key = f"weather:{slugify_key(city)}"
         cached_data = cache.get(key)
+        print(cached_data)
         ip = get_client_ip(request)
 
         if cached_data:
             source = "cache"
-            save_weather_history.delay(city, data['weather'][0]['description'], source, ip)
+            save_weather_history.delay(city, cached_data['weather'][0]['description'], source, ip)
             return Response({"source": source, "data": cached_data['weather'][0]['description']})
         
         try:
