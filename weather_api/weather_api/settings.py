@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config, Csv
+import logging
+from pythonjsonlogger import jsonlogger
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -116,6 +118,27 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Weather API',
     'DESCRIPTION': 'API intermediária que consome dados da OpenWeatherMap e oferece a descrição do tempo de alguma cidade',
     'VERSION': '1.0.0',
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
 }
 
 # Password validation
