@@ -10,6 +10,11 @@ from .utils import fetch_weather
 from .tasks import save_weather_history
 from .serialiazers import WeatherHistorySerializer
 from .models import WeatherHistory
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+import logging
+
+logger = logging.getLogger(__name__)
+
 # Create your views here.
 
 def get_client_ip(request):
@@ -23,6 +28,26 @@ def get_client_ip(request):
 def slugify_key(text):
     text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
     return text.lower().replace(" ", "_")
+
+def create_log(city, source, ip):
+     logger.info("Weather data returned", extra={
+            "city": city,
+            "source": source,
+            "ip": ip,
+        })
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='city',
+            type=str,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description='Name of the city',
+        ),
+    ]
+)
+
 
 class WeatherView(APIView):
 
@@ -38,6 +63,7 @@ class WeatherView(APIView):
 
         if cached_data:
             source = "cache"
+            create_log(city, source, ip)
             save_weather_history.delay(city, cached_data['weather'][0]['description'], source, ip)
             return Response({"source": source, "data": cached_data['weather'][0]['description']})
         
@@ -45,9 +71,13 @@ class WeatherView(APIView):
             data = fetch_weather(city)
             cache.set(key, data, timeout= config('CACHE_TIMEOUT'))
             source = "api"
+            create_log(city, source, ip)
             save_weather_history.delay(city, data['weather'][0]['description'], source, ip)
             return Response ({"source": source, "data": data['weather'][0]['description']})
         except requests.RequestException as e:
+            logger.exception("Unexpected error fetching weather data", extra={
+                "error": str(e),
+            })
             return Response({"error": str(e)}, status = status.HTTP_502_BAD_GATEWAY)
         
 class WeatherHistoryView(APIView):
