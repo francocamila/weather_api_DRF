@@ -10,6 +10,8 @@ from .utils import fetch_weather
 from .tasks import save_weather_history
 from .serialiazers import WeatherHistorySerializer
 from .models import WeatherHistory
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+
 # Create your views here.
 
 def get_client_ip(request):
@@ -23,6 +25,18 @@ def get_client_ip(request):
 def slugify_key(text):
     text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
     return text.lower().replace(" ", "_")
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='city',
+            type=str,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description='Name of the city',
+        ),
+    ]
+)
 
 class WeatherView(APIView):
 
