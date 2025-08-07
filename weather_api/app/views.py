@@ -31,7 +31,7 @@ class WeatherView(APIView):
 
         if cached_data:
             source = "cache"
-            save_weather_history.delay(city, data['weather'][0]['description'], source, ip)
+            save_weather_history.delay(city, cached_data['weather'][0]['description'], source, ip)
             return Response({"source": source, "data": cached_data['weather'][0]['description']})
         
         try:
